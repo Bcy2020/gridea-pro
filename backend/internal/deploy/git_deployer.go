@@ -24,6 +24,12 @@ func NewGitProvider() *GitProvider {
 }
 
 func (p *GitProvider) Deploy(ctx context.Context, outputDir string, setting *domain.Setting, logger LogFunc) error {
+	// 取消快速返回：上层 ctx 在进入 Deploy 前就被 cancel（例如 CDN 阶段用户已点取消），
+	// 直接返回避免再走整个 git 流程。
+	if err := ctx.Err(); err != nil {
+		return err
+	}
+
 	logger("Preparing git repository...")
 
 	// 3.1 Initialize or Open Git repo
@@ -121,10 +127,15 @@ func (p *GitProvider) Deploy(ctx context.Context, outputDir string, setting *dom
 	}
 
 	// 3.5 Add all files
+	// 注意：go-git 的 AddWithOptions 不接受 ctx，大站点会扫描全部文件计算 SHA，
+	// 期间 cancel 信号被吞。这里只能等它跑完，但跑完后立刻 check ctx 避免继续 commit/push。
 	logger("Adding files to commit...")
 	err = w.AddWithOptions(&git.AddOptions{All: true})
 	if err != nil {
 		return fmt.Errorf("failed to add files: %w", err)
+	}
+	if err := ctx.Err(); err != nil {
+		return err
 	}
 
 	// 3.6 Commit
@@ -167,7 +178,10 @@ func (p *GitProvider) Deploy(ctx context.Context, outputDir string, setting *dom
 		return fmt.Errorf("failed to get head ref: %w", err)
 	}
 
-	// 3.8 Push (修复核心 Bug 的地方)
+	// 3.8 Push
+	if err := ctx.Err(); err != nil {
+		return err
+	}
 	logger(fmt.Sprintf("Pushing to remote %s branch (this might take a while)...", branch))
 
 	// 定义 RefSpec：将本地的当前 HEAD 强制推送到远程的指定 branch
@@ -187,7 +201,21 @@ func (p *GitProvider) Deploy(ctx context.Context, outputDir string, setting *dom
 		pushOptions.ProxyOptions = transport.ProxyOptions{URL: setting.ProxyURL}
 	}
 
-	err = r.PushContext(ctx, pushOptions)
+	// 用 goroutine + select 包裹 PushContext：
+	//   go-git 的 HTTP push 在 chunked upload / TLS 握手等场景下，ctx 不能完全打断
+	//   底层连接，导致 Deploy 函数迟迟不返回、上层 isDeploying 锁也释放不掉。
+	//   把 push 跑在 goroutine 里，主线程 select ctx.Done/pushDone，让 cancel 信号
+	//   即便在 go-git 内部不响应的情况下也能让函数立即返回。
+	//   底层 goroutine 会在 ctx 取消后由 HTTP transport 关闭连接，自然回收（短时 leak 可接受）。
+	pushDone := make(chan error, 1)
+	go func() {
+		pushDone <- r.PushContext(ctx, pushOptions)
+	}()
+	select {
+	case <-ctx.Done():
+		return ctx.Err()
+	case err = <-pushDone:
+	}
 
 	if err == git.NoErrAlreadyUpToDate {
 		logger("Remote is already up-to-date!")
