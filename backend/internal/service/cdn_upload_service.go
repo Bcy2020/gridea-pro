@@ -593,11 +593,16 @@ func (s *CdnUploadService) deleteFromGitHub(ctx context.Context, setting domain.
 		branch = "main"
 	}
 
-	// 1. 拿远端 SHA；404 认为已经不存在，视作删除成功
+	// 1. 拿远端 SHA。区分两类错误：
+	//   - errRemoteFileNotFound：远端真 404，目标已达成，视作删除成功
+	//   - 其他错误（网络抖动、限流、5xx 等）：必须透传，否则 caller 会把 manifest
+	//     里这条孤儿条目误删，下次部署再也检测不到它，远端文件永远清不掉
 	sha, err := s.getGithubFileSHA(ctx, setting, remotePath, branch)
 	if err != nil {
-		// getGithubFileSHA 把"文件不存在"当成 error —— 这里视作孤儿已消失
-		return nil
+		if errors.Is(err, errRemoteFileNotFound) {
+			return nil
+		}
+		return err
 	}
 
 	// 2. DELETE 请求
