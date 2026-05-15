@@ -18,7 +18,13 @@ const appUserModelID = "com.gridea.pro"
 // macOS 来源名来自 Info.plist CFBundleName，Windows 来自 AUMID 注册。
 const appDisplayName = "Gridea Pro"
 
+// appGUID 给 Windows 注册表用的稳定标识，不要再改（一旦改用户机器上重新注册）。
+const appGUID = "8b0a3c4f-1d2e-4f5a-9b6c-7d8e9f0a1b2c"
+
 // Send 向系统通知中心发送一条通知。title 是粗体标题，body 是正文。
+// 不管成败都追加一行日志到用户缓存目录下的 notify.log，方便事后诊断。
 func Send(title, body string) error {
-	return sendPlatform(title, body)
+	err := sendPlatform(title, body)
+	writeDebugLog(title, body, err)
+	return err
 }
