@@ -398,6 +398,7 @@
             "noTitle": "먼저 게시글 제목을 입력해 주세요",
             "baseURL": "Base URL",
             "baseURLDesc": "OpenAI 호환 엔드포인트를 입력하세요. 일반적으로 /v1 로 끝나며 중계 또는 자체 호스팅 서비스에 사용합니다.",
+            "baseURLDescAnthropic": "Anthropic 호환 엔드포인트를 입력하세요(중계 서비스 루트 주소, /v1 불필요 — 자동으로 추가됩니다). 중계 또는 자체 호스팅 서비스에 사용합니다.",
             "fillBaseURLFirst": "먼저 Base URL을 입력해 주세요"
         },
         "network": {

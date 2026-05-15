@@ -373,6 +373,7 @@
       "model": "模型",
       "baseURL": "Base URL",
       "baseURLDesc": "填写 OpenAI 兼容接口地址，通常以 /v1 结尾，用于中转站或自部署服务。",
+      "baseURLDescAnthropic": "填写 Anthropic 兼容接口地址（中转站根地址，无需带 /v1，会自动补全），用于中转站或自部署服务。",
       "selectModel": "请选择模型",
       "customModelPlaceholder": "输入模型 ID",
       "useCustomModelId": "使用自定义模型 ID",

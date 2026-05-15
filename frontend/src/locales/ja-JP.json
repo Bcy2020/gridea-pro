@@ -398,6 +398,7 @@
             "noTitle": "先に記事タイトルを入力してください",
             "baseURL": "Base URL",
             "baseURLDesc": "OpenAI 互換エンドポイントを入力してください。通常は /v1 で終わります。中継サービスやセルフホストで使用します。",
+            "baseURLDescAnthropic": "Anthropic 互換エンドポイントを入力してください（中継サービスのルート URL、/v1 は不要で自動補完されます）。中継サービスやセルフホストで使用します。",
             "fillBaseURLFirst": "先に Base URL を入力してください"
         },
         "network": {

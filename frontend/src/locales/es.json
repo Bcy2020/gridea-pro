@@ -398,6 +398,7 @@
             "noTitle": "Por favor, introduce primero el título del artículo",
             "baseURL": "Base URL",
             "baseURLDesc": "Endpoint compatible con OpenAI, normalmente termina en /v1. Úsalo para relays/proxies o servicios autoalojados.",
+            "baseURLDescAnthropic": "Endpoint compatible con Anthropic (URL raíz, sin /v1 — se añade automáticamente). Úsalo para relays/proxies o servicios autoalojados.",
             "fillBaseURLFirst": "Introduce primero la Base URL"
         },
         "network": {

@@ -398,6 +398,7 @@
             "noTitle": "請先填寫文章標題",
             "baseURL": "Base URL",
             "baseURLDesc": "填寫 OpenAI 相容介面地址，通常以 /v1 結尾，用於中轉站或自部署服務。",
+            "baseURLDescAnthropic": "填寫 Anthropic 相容介面地址（中轉站根地址，無需帶 /v1，會自動補全），用於中轉站或自部署服務。",
             "fillBaseURLFirst": "請先填寫 Base URL"
         },
         "network": {

@@ -373,6 +373,7 @@
             "model": "Model",
             "baseURL": "Base URL",
             "baseURLDesc": "OpenAI-compatible endpoint, usually ending with /v1. Use it for proxy/relay or self-hosted services.",
+            "baseURLDescAnthropic": "Anthropic-compatible endpoint (root URL, without /v1 — it is appended automatically). Use it for proxy/relay or self-hosted services.",
             "selectModel": "Select a model",
             "customModelPlaceholder": "Enter model ID",
             "useCustomModelId": "Use custom model ID",

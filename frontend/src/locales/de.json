@@ -398,6 +398,7 @@
             "noTitle": "Bitte geben Sie zuerst den Artikeltitel ein",
             "baseURL": "Base URL",
             "baseURLDesc": "OpenAI-kompatibler Endpunkt, normalerweise mit /v1 am Ende. Für Relay/Proxy oder selbst gehostete Dienste.",
+            "baseURLDescAnthropic": "Anthropic-kompatibler Endpunkt (Root-URL, ohne /v1 — wird automatisch ergänzt). Für Relay/Proxy oder selbst gehostete Dienste.",
             "fillBaseURLFirst": "Bitte zuerst die Base URL eingeben"
         },
         "network": {

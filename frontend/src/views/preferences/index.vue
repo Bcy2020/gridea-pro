@@ -158,8 +158,8 @@ v-for="item in navItems" :key="item.key"
                 <div v-if="aiForm.activeProvider && isCustomBaseURLProvider" class="flex items-start gap-3">
                   <Label class="w-20 text-xs shrink-0 pt-2">{{ t('settings.ai.baseURL') }}</Label>
                   <div class="flex-1 space-y-1.5">
-                    <Input v-model="currentBaseURL" placeholder="https://api.example.com/v1" />
-                    <div class="text-xs text-muted-foreground">{{ t('settings.ai.baseURLDesc') }}</div>
+                    <Input v-model="currentBaseURL" :placeholder="baseURLPlaceholder" />
+                    <div class="text-xs text-muted-foreground">{{ baseURLDesc }}</div>
                   </div>
                 </div>
 
@@ -398,6 +398,15 @@ const currentProviderInfo = computed<aiNS.ProviderInfo | undefined>(() =>
 )
 const customBaseURLProviderIds = ['custom-openai', 'custom-anthropic']
 const isCustomBaseURLProvider = computed(() => customBaseURLProviderIds.includes(aiForm.value.activeProvider))
+// Base URL 的提示与占位符按协议区分：Anthropic 兼容接口填根地址（自动补 /v1/messages），OpenAI 兼容接口通常带 /v1
+const baseURLDesc = computed(() =>
+  aiForm.value.activeProvider === 'custom-anthropic'
+    ? t('settings.ai.baseURLDescAnthropic')
+    : t('settings.ai.baseURLDesc'),
+)
+const baseURLPlaceholder = computed(() =>
+  aiForm.value.activeProvider === 'custom-anthropic' ? 'https://api.example.com' : 'https://api.example.com/v1',
+)
 // 当前选中厂商的模型列表（默认或刷新后），按厂商隔离
 const modelOptionsByProvider = ref<Record<string, string[]>>({})
 const currentModelOptions = computed<string[]>(() => {
