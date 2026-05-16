@@ -155,6 +155,8 @@
             "archivesPerPage": "Archives per page",
             "feedEnabled": "Generate RSS",
             "feedEnabledDesc": "When off, feed.xml will not be generated",
+            "katexEnabled": "KaTeX Math Rendering",
+            "katexEnabledDesc": "Render $...$ and $$...$$ as formulas; KaTeX stylesheet is auto-injected",
             "rssArticles": "Number articles RSS/Feed",
             "favicon": "Favicon setting",
             "avatar": "Avatar setting",

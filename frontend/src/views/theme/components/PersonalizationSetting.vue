@@ -147,6 +147,14 @@
         </div>
       </div>
 
+      <div class="grid grid-cols-[180px_1fr] items-center gap-4">
+        <label class="text-sm font-medium text-right text-muted-foreground">{{ $t('settings.basic.katexEnabled') }}</label>
+        <div class="flex items-center gap-3">
+          <Switch :checked="!!form.katexEnabled" @update:checked="(v: boolean) => form.katexEnabled = v" size="sm" />
+          <span class="text-xs text-muted-foreground">{{ $t('settings.basic.katexEnabledDesc') }}</span>
+        </div>
+      </div>
+
     </div>
 
     <footer-box>
@@ -204,6 +212,7 @@ const form = reactive({
   feedCount: DEFAULT_FEED_COUNT,
   postPath: DEFAULT_POST_PATH,
   tagPath: DEFAULT_TAG_PATH,
+  katexEnabled: true,
 })
 
 const postPageSizeArray = computed({
@@ -287,6 +296,7 @@ onMounted(() => {
   form.feedCount = config.feedCount || DEFAULT_FEED_COUNT
   form.postPath = config.postPath || DEFAULT_POST_PATH
   form.tagPath = config.tagPath || DEFAULT_TAG_PATH
+  form.katexEnabled = typeof config.katexEnabled === 'boolean' ? config.katexEnabled : true
 })
 
 const openPage = (url: string) => {

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"gridea-pro/backend/internal/domain"
 	"gridea-pro/backend/internal/template"
+	"gridea-pro/backend/internal/utils/katexjs"
 	"gridea-pro/backend/internal/version"
 	"strings"
 )
@@ -21,10 +22,11 @@ type HtmlPostProcessor struct {
 	avatar       string // 站点头像 URL，用作 og:image / JSON-LD logo 的兜底
 	themeName    string
 	themeVersion string
+	katexEnabled bool // 是否自动给含公式的页面注入 KaTeX CSS link
 }
 
 // NewHtmlPostProcessor 创建后处理器
-func NewHtmlPostProcessor(seo *domain.SeoSetting, cdn *domain.CdnSetting, pwa *domain.PwaSetting, domain, siteName, siteDesc, language, avatar, themeName, themeVersion string) *HtmlPostProcessor {
+func NewHtmlPostProcessor(seo *domain.SeoSetting, cdn *domain.CdnSetting, pwa *domain.PwaSetting, domain, siteName, siteDesc, language, avatar, themeName, themeVersion string, katexEnabled bool) *HtmlPostProcessor {
 	return &HtmlPostProcessor{
 		seoSetting:   seo,
 		cdnSetting:   cdn,
@@ -36,6 +38,7 @@ func NewHtmlPostProcessor(seo *domain.SeoSetting, cdn *domain.CdnSetting, pwa *d
 		avatar:       avatar,
 		themeName:    themeName,
 		themeVersion: themeVersion,
+		katexEnabled: katexEnabled,
 	}
 }
 
@@ -56,6 +59,9 @@ func (p *HtmlPostProcessor) Process(html, pageType, pageURL string, post *templa
 
 	// PWA meta 标签注入
 	html = p.injectPwa(html)
+
+	// KaTeX CSS 注入：开关开且页面含公式时，注入 katex.min.css 到 <head>
+	html = p.injectKatexCSS(html)
 
 	// 自定义 body 代码注入
 	html = p.injectBody(html)
@@ -242,6 +248,34 @@ func (p *HtmlPostProcessor) injectSeo(html, pageType, pageURL string, post *temp
 		return html
 	}
 	return html[:idx] + inject + html[idx:]
+}
+
+// injectKatexCSS 当开关打开且当前页面渲染了 KaTeX 公式时，自动在 <head> 注入
+// katex.min.css 的 <link>。这样所有主题（包括第三方）即使没在模板里写 katex 样式引用，
+// 公式也会被正确显示。
+//
+// 检测依据：KaTeX 渲染后会在 HTML 里留下 `class="katex"` 标记，无公式的页面不会有这个串，
+// 简单 strings.Contains 足以分辨；同时也避免在没用到公式的页面引入多余的 CSS。
+func (p *HtmlPostProcessor) injectKatexCSS(html string) string {
+	if !p.katexEnabled {
+		return html
+	}
+	if !strings.Contains(html, `class="katex`) {
+		return html
+	}
+	// 已有 katex 样式则跳过（主题自带 / 用户自定义已注入）
+	if strings.Contains(html, "katex.min.css") || strings.Contains(html, "katex.css") {
+		return html
+	}
+	idx := strings.LastIndex(strings.ToLower(html), "</head>")
+	if idx == -1 {
+		return html
+	}
+	link := fmt.Sprintf(
+		`<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@%s/dist/katex.min.css" crossorigin="anonymous">`+"\n",
+		katexjs.Version,
+	)
+	return html[:idx] + link + html[idx:]
 }
 
 // orderedJSON 按给定顺序生成 JSON 字符串（保持属性语义排序，而非字母序）

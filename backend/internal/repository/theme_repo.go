@@ -100,6 +100,7 @@ func (r *themeRepository) loadConfigIfNeeded() error {
 			PostPath:         "post",
 			TagPath:          "tag",
 			LinkPath:         "links",
+			KatexEnabled:     true,
 		}
 		r.configLoaded = true
 		r.configModTime = currentModTime

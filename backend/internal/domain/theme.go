@@ -4,6 +4,7 @@ package domain
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"strings"
 )
@@ -43,7 +44,30 @@ type ThemeConfig struct {
 	TagsPath         string                 `json:"tagsPath"`
 	LinkPath         string                 `json:"linkPath"`
 	MemosPath        string                 `json:"memosPath"`
-	CustomConfig     map[string]interface{} `json:"customConfig,omitempty"`
+	// KatexEnabled 控制是否在站点渲染产物里自动注入 KaTeX 公式样式。
+	// 关闭后即使文章里有 `$...$` 公式，主题不会被注入 katex.min.css，
+	// 公式样式由主题自己负责（或不显示）。默认开。
+	//
+	// 兼容性：老配置文件没有这个字段，UnmarshalJSON 会把它默认成 true，
+	// 升级后不需要用户重新打开开关。
+	KatexEnabled bool                   `json:"katexEnabled"`
+	CustomConfig map[string]interface{} `json:"customConfig,omitempty"`
+}
+
+// UnmarshalJSON 自定义反序列化：对老配置（缺 katexEnabled 字段）默认开 KaTeX。
+// 这样从 v1.2.0 之前升级过来的站点不需要手动到主题设置里打开开关。
+func (c *ThemeConfig) UnmarshalJSON(data []byte) error {
+	type alias ThemeConfig
+	if err := json.Unmarshal(data, (*alias)(c)); err != nil {
+		return err
+	}
+	var raw map[string]json.RawMessage
+	if err := json.Unmarshal(data, &raw); err == nil {
+		if _, ok := raw["katexEnabled"]; !ok {
+			c.KatexEnabled = true
+		}
+	}
+	return nil
 }
 
 // Validate 校验主题配置

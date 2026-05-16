@@ -281,6 +281,7 @@ func (s *Engine) renderAllImpl(ctx context.Context) error {
 			avatar,
 			templateData.ThemeConfig.ThemeName,
 			themeVersion,
+			themeConfig.KatexEnabled,
 		)
 		s.pageRenderer.SetPostProcessor(postProcessor)
 	}

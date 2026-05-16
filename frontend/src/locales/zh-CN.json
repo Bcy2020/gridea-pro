@@ -155,6 +155,8 @@
       "archivesPerPage": "每页归档数",
       "feedEnabled": "生成 RSS",
       "feedEnabledDesc": "关闭后将不会生成 feed.xml",
+      "katexEnabled": "KaTeX 公式渲染",
+      "katexEnabledDesc": "文章中 $...$ 与 $$...$$ 会被渲染成公式，并自动注入 KaTeX 样式",
       "rssArticles": "RSS/Feed 文章数量",
       "favicon": "网页图标",
       "avatar": "头像配置",
