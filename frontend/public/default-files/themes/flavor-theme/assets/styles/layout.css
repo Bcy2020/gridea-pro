@@ -105,22 +105,7 @@
   height: 18px;
 }
 
-/* ── Theme toggle icon swap (visible icon = 下一步将切换到的状态) ── */
-.theme-toggle-sun {
-  display: flex;
-}
-
-.theme-toggle-moon {
-  display: none;
-}
-
-:root.theme-light .theme-toggle-sun {
-  display: none;
-}
-
-:root.theme-light .theme-toggle-moon {
-  display: flex;
-}
+/* Theme toggle icon swap (display rules) 内联在 head.html 里，避免 FOUC。 */
 
 /* 深色模式下的太阳图标：默认点亮为金色，hover 时更亮（仅底色效果继承 .theme-toggle:hover） */
 .theme-toggle-sun {

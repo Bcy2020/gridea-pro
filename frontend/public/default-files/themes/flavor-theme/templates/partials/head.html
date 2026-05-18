@@ -23,6 +23,15 @@
 <style>:root { --heatmap-color: {{ theme_config.heatmapColor }}; }</style>
 {% endif %}
 
+{# 主题切换图标 swap 规则内联：跟下方的主题类初始化同步生效，
+   避免 layout.css 下载完成前两个图标都显示并把 flex 布局撑歪。 #}
+<style>
+  .theme-toggle-sun  { display: flex; }
+  .theme-toggle-moon { display: none; }
+  :root.theme-light .theme-toggle-sun  { display: none; }
+  :root.theme-light .theme-toggle-moon { display: flex; }
+</style>
+
 {# 主题色初始化：优先用本地存储，否则使用站长在主题外观里选择的默认主题，避免深浅模式闪屏 #}
 <script>
   (function () {
