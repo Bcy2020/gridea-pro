@@ -6,7 +6,6 @@
         <div class="flex items-center gap-3">
           <Switch :checked="form.enabled" @update:checked="(v: boolean) => form.enabled = v" size="sm" />
           <span class="text-xs text-muted-foreground">{{ t('settings.imageHosting.enableDesc') }}</span>
-          <a href="https://s.ee" target="_blank" class="text-xs text-primary/70 hover:text-primary underline ml-1" style="--wails-draggable: no-drag">S.EE</a>
         </div>
       </div>
 
@@ -29,7 +28,11 @@
                 <svg v-else xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/></svg>
               </button>
             </div>
-            <div class="text-xs text-muted-foreground mt-1.5">{{ t('settings.imageHosting.apiKeyDesc') }}</div>
+            <div class="mt-1.5 text-xs text-primary flex items-center gap-1 cursor-pointer w-fit"
+              @click="BrowserOpenURL('https://s.ee')">
+              {{ t('settings.imageHosting.apiKeyDesc') }}
+              <ArrowTopRightOnSquareIcon class="size-3" />
+            </div>
           </div>
         </div>
 
@@ -39,7 +42,7 @@
             <div class="flex items-center gap-2">
               <Button
                 variant="outline"
-                class="h-7 text-xs rounded-full cursor-pointer"
+                class="h-7 text-xs rounded-full px-3.5 border border-primary/20 text-primary/80 hover:bg-primary/5 hover:text-primary cursor-pointer"
                 :disabled="listLoading"
                 @click="loadImages(1)">
                 {{ t('settings.imageHosting.refresh') }}
@@ -123,6 +126,8 @@ import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
 import { GetSetting, SaveSetting, ListImages, DeleteImage } from '@/wailsjs/go/facade/ImageHostingFacade'
 import { domain } from '@/wailsjs/go/models'
+import { BrowserOpenURL } from '@/wailsjs/runtime'
+import { ArrowTopRightOnSquareIcon } from '@heroicons/vue/24/outline'
 
 const { t } = useI18n()
 
