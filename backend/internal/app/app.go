@@ -12,6 +12,7 @@ import (
 	"path/filepath"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
@@ -495,7 +496,7 @@ func (a *App) ExportAsZip() (string, error) {
 
 	opts := runtime.SaveDialogOptions{
 		Title:           "导出站点",
-		DefaultFilename: "gridea-site.zip",
+		DefaultFilename: a.exportZipFilename(),
 		Filters: []runtime.FileFilter{
 			{DisplayName: "ZIP 文件 (*.zip)", Pattern: "*.zip"},
 		},
@@ -516,6 +517,40 @@ func (a *App) ExportAsZip() (string, error) {
 	}
 	os.Remove(zipPath)
 	return savePath, nil
+}
+
+// exportZipFilename 生成导出 zip 的默认文件名：<站点名>-<YYYY-MM-DD>.zip。
+// 站点名取自当前主题配置，为空或清理后为空时回退到 gridea-site。
+func (a *App) exportZipFilename() string {
+	siteName := ""
+	if config, err := a.services.Services.Theme.LoadThemeConfig(a.ctx); err == nil {
+		siteName = sanitizeFilename(config.SiteName)
+	}
+	if siteName == "" {
+		siteName = "gridea-site"
+	}
+	return fmt.Sprintf("%s-%s.zip", siteName, time.Now().Format("2006-01-02"))
+}
+
+// sanitizeFilename 去除路径分隔符、文件系统非法字符与控制字符并限制长度，
+// 供另存为对话框的默认名使用（不含扩展名）。
+func sanitizeFilename(name string) string {
+	replacer := strings.NewReplacer(
+		"/", "-", "\\", "-", ":", "-", "*", "-", "?", "-",
+		"\"", "-", "<", "-", ">", "-", "|", "-",
+	)
+	name = replacer.Replace(name)
+	name = strings.Map(func(r rune) rune {
+		if r < 0x20 {
+			return -1
+		}
+		return r
+	}, name)
+	name = strings.Trim(name, " .")
+	if r := []rune(name); len(r) > 60 {
+		name = strings.Trim(string(r[:60]), " .")
+	}
+	return name
 }
 
 // zipDirectory 将 srcDir 目录下所有文件递归压缩到 dstZip。

@@ -4,9 +4,17 @@
 
       <!-- ── 已启用的平台 ──────────────────────────────────────── -->
       <div class="space-y-4">
-        <h2 class="text-sm text-primary font-medium border-l-[3px] border-primary pl-3 flex items-center h-4">
-          {{ t('settings.network.currentPlatform') }}
-        </h2>
+        <div class="flex items-center justify-between gap-3">
+          <h2 class="text-sm text-primary font-medium border-l-[3px] border-primary pl-3 flex items-center h-4">
+            {{ t('settings.network.currentPlatform') }}
+          </h2>
+          <Button variant="outline" size="sm"
+            class="h-7 text-xs rounded-full px-3.5 border border-primary/20 text-primary/80 hover:bg-primary/5 hover:text-primary cursor-pointer flex-shrink-0"
+            @click="handleExport">
+            <ArrowDownTrayIcon class="size-3.5 mr-1.5" />
+            {{ t('settings.network.export') }}
+          </Button>
+        </div>
         <p class="text-xs text-muted-foreground pl-3 -mt-2">
           {{ t('settings.network.multiPlatformHint') }}
         </p>
@@ -123,40 +131,6 @@
               </div>
             </div>
           </div>
-          <!-- ── 已启用的导出卡片 ────────────────────── -->
-          <div v-if="exportEnabled"
-            class="border border-primary/20 rounded-xl overflow-hidden">
-            <div class="flex items-center gap-5 px-6 py-5">
-              <div class="size-11 rounded-lg flex items-center justify-center text-white flex-shrink-0 shadow-sm"
-                style="background: #6366f1">
-                <ArrowDownTrayIcon class="size-5.5" />
-              </div>
-              <div class="flex-1 min-w-0">
-                <div class="flex items-center gap-2.5">
-                  <span class="text-base font-bold text-foreground">{{ t('settings.network.exportAsZip') }}</span>
-                  <span
-                    class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-green-500/10 text-green-600 dark:text-green-400 text-[11px] font-medium">
-                    <span class="size-1.5 rounded-full bg-green-500 inline-block"></span>
-                    {{ t('settings.network.connected') }}
-                  </span>
-                </div>
-                <div class="text-xs text-muted-foreground mt-0.5">{{ t('settings.network.exportDesc') }}</div>
-              </div>
-              <div class="flex items-center gap-2 flex-shrink-0">
-                <Button variant="default" size="sm"
-                  class="h-8 text-xs rounded-full px-4 bg-primary text-background hover:bg-primary/90"
-                  @click="handleExport">
-                  <ArrowDownTrayIcon class="size-3.5 mr-1.5" />
-                  {{ t('settings.network.export') }}
-                </Button>
-                <label class="flex items-center gap-1.5 cursor-pointer select-none pl-2 border-l border-border/40"
-                  @click.stop="toggleExport">
-                  <span class="text-[11px] font-medium text-primary">{{ t('settings.network.enabled') }}</span>
-                  <Switch :checked="true" size="sm" />
-                </label>
-              </div>
-            </div>
-          </div>
         </div>
         <div v-else class="text-sm text-muted-foreground px-3 py-6 text-center bg-muted/20 rounded-lg">
           {{ t('settings.network.noEnabledPlatforms') }}
@@ -164,13 +138,13 @@
       </div>
 
       <!-- ── 其他平台（未启用）────────────────────────────────── -->
-      <div v-if="disabledPlatformsList.length > 0 || !exportEnabled" class="space-y-4">
+      <div v-if="disabledPlatformsList.length > 0" class="space-y-4">
         <h2 class="text-sm text-primary font-medium border-l-[3px] border-primary pl-3 flex items-center h-4">
           {{ t('settings.network.otherPlatforms') }}
         </h2>
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <div v-for="p in disabledPlatformsList" :key="p.id"
-            class="group flex flex-col p-4 rounded-xl relative transition-all duration-200 bg-muted/10 border border-border/30 hover:bg-primary/5 hover:border-primary/20 hover:shadow-xs hover:-translate-y-0.5">
+            class="group flex flex-col p-4 rounded-xl relative transition-all duration-200 bg-muted/10 border border-primary/20 hover:bg-primary/5 hover:border-primary/40 hover:shadow-xs hover:-translate-y-0.5">
 
             <div class="flex items-start gap-3 mb-2">
               <div class="size-9 rounded-lg flex items-center justify-center text-white flex-shrink-0 shadow-sm"
@@ -200,6 +174,24 @@
               </div>
             </div>
 
+            <!-- 已连接：用户信息摘要 -->
+            <div v-if="statuses[p.id]?.connected && statuses[p.id]?.username" class="mt-1 mb-3">
+              <div
+                class="flex flex-wrap items-center gap-x-3 gap-y-1.5 px-3 py-2 bg-muted/40 rounded-lg text-[11px] text-muted-foreground">
+                <div class="flex items-center gap-1.5">
+                  <img v-if="statuses[p.id]?.avatarUrl" :src="statuses[p.id].avatarUrl"
+                    class="size-4 rounded-full flex-shrink-0" alt="" />
+                  <span class="font-medium text-foreground/70">{{ statuses[p.id].username }}</span>
+                </div>
+                <template v-for="item in getCardItems(p.id, false)" :key="item.value">
+                  <div class="flex items-center gap-1">
+                    <component :is="item.icon" class="size-3 opacity-50" />
+                    <span>{{ item.value }}</span>
+                  </div>
+                </template>
+              </div>
+            </div>
+
             <div class="flex items-center justify-between mt-auto pt-2.5 border-t border-border/50">
               <div class="flex items-center gap-2">
                 <button
@@ -208,7 +200,7 @@
                   <Cog6ToothIcon class="size-3.5" />
                 </button>
 
-                <template v-if="p.hasOAuth">
+                <template v-if="p.hasOAuth && !statuses[p.id]?.connected">
                   <Button v-if="!oauthLoading[p.id]" variant="ghost" size="sm"
                     class="h-7 text-[10px] rounded-full px-2.5 text-primary hover:bg-primary/10"
                     @click.stop="handleOAuth(p.id)">
@@ -225,36 +217,6 @@
               </div>
               <label class="flex items-center gap-1.5 cursor-pointer select-none"
                 @click.stop="togglePlatform(p.id)">
-                <span class="text-[10px] font-medium text-muted-foreground">{{ t('settings.network.disabled') }}</span>
-                <Switch :checked="false" size="sm" />
-              </label>
-            </div>
-          </div>
-
-          <!-- ── 打包 ZIP 独立卡片 ───────────────────────── -->
-          <div v-if="!exportEnabled"
-            class="group flex flex-col p-4 rounded-xl relative transition-all duration-200 bg-muted/10 border border-border/30 hover:bg-primary/5 hover:border-primary/20 hover:shadow-xs hover:-translate-y-0.5">
-            <div class="flex items-start gap-3 mb-2">
-              <div class="size-9 rounded-lg flex items-center justify-center text-white flex-shrink-0 shadow-sm"
-                style="background: #6366f1">
-                <ArrowDownTrayIcon class="size-4.5" />
-              </div>
-              <div class="flex-1 min-w-0 pt-0.5">
-                <div class="flex items-center gap-2">
-                  <span class="text-sm font-semibold text-foreground leading-tight">{{ t('settings.network.exportAsZip') }}</span>
-                  <span
-                    class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground text-[10px] font-medium">
-                    <span class="size-1.5 rounded-full bg-muted-foreground/40 inline-block"></span>
-                    {{ t('settings.network.notConnected') }}
-                  </span>
-                </div>
-                <div class="text-xs text-muted-foreground mt-0.5 line-clamp-1">{{ t('settings.network.exportDesc') }}</div>
-              </div>
-            </div>
-            <div class="flex items-center justify-between mt-auto pt-2.5 border-t border-border/50">
-              <div class="flex items-center gap-2"></div>
-              <label class="flex items-center gap-1.5 cursor-pointer select-none"
-                @click.stop="toggleExport">
                 <span class="text-[10px] font-medium text-muted-foreground">{{ t('settings.network.disabled') }}</span>
                 <Switch :checked="false" size="sm" />
               </label>
@@ -615,7 +577,6 @@ const saveLoading = ref(false)
 const revokeDialogOpen = ref(false)
 const revokePlatformId = ref('')
 const tokenVisible = ref(false)
-const exportEnabled = ref(false)
 
 // 抽屉状态
 const drawerOpen = ref(false)
@@ -782,10 +743,6 @@ async function handleExport() {
     const msg = typeof e === 'string' ? e : (e?.message || t('settings.network.exportFailed'))
     toast.error(msg)
   }
-}
-
-function toggleExport() {
-  exportEnabled.value = !exportEnabled.value
 }
 
 function togglePlatform(platformId: string) {
@@ -976,10 +933,10 @@ function getConfigSummary(platformId: string): string {
 }
 
 // 其他平台卡片的配置条目（带 icon）
-function getCardItems(platformId: string): { icon: any; value: string; url?: string }[] {
+function getCardItems(platformId: string, includeDomain = true): { icon: any; value: string; url?: string }[] {
   const cfg = (siteStore.site.setting.platformConfigs || {})[platformId] || {}
   const items: { icon: any; value: string; url?: string }[] = []
-  if (cfg.domain) {
+  if (includeDomain && cfg.domain) {
     const raw = String(cfg.domain)
     items.push({ icon: GlobeAltIcon, value: raw.replace(/^https?:\/\//, ''), url: raw })
   }
