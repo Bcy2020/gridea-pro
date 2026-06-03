@@ -75,7 +75,7 @@ func createPostTool() mcp.Tool {
 		mcp.WithString("title", mcp.Description("Post title"), mcp.Required()),
 		mcp.WithString("content", mcp.Description("Post markdown content"), mcp.Required()),
 		mcp.WithString("date", mcp.Description("Publish date (YYYY-MM-DD HH:mm:ss)")),
-		mcp.WithString("fileName", mcp.Description("Custom filename WITHOUT the .md extension (optional; .md will be appended automatically)")),
+		mcp.WithString("filename", mcp.Description("Custom filename WITHOUT the .md extension (optional; .md will be appended automatically)")),
 		mcp.WithString("tags", mcp.Description("Comma-separated tag names, e.g. 'tag1, tag2, tag3'")),
 		mcp.WithString("category", mcp.Description("Category name (one category per post)")),
 		mcp.WithBoolean("published", mcp.Description("Whether to publish immediately")),
@@ -109,7 +109,7 @@ func createPostHandler(s *service.PostService) server.ToolHandlerFunc {
 			post.CreatedAt = time.Now()
 		}
 
-		post.FileName = normalizeFileName(request.GetString("fileName", ""))
+		post.FileName = normalizeFileName(request.GetString("filename", ""))
 		post.Published = request.GetBool("published", true)
 
 		if v := request.GetString("tags", ""); v != "" {
