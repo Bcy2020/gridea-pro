@@ -1,6 +1,7 @@
 # Claude Code AI 评审：在 Issue / PR 评论中 @claude 触发。
 # 典型用法：PR 检查全绿后，维护者评论「@claude 请 review 这个 PR」，
 # Claude 会读取 diff 并在 PR 上留结构化评审意见，供维护者终审参考。
+# 评审维度与输出格式由 .github/REVIEW_GUIDELINES.md 定义——改评审标准只需改那个文档。
 # 鉴权：仓库 secret CLAUDE_CODE_OAUTH_TOKEN（本地 `claude setup-token` 生成，消耗订阅额度）。
 name: Claude
 
@@ -38,3 +39,5 @@ jobs:
         uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          claude_args: >-
+            --append-system-prompt "评审代码前，必须先完整阅读 .github/REVIEW_GUIDELINES.md，严格按其中的评审维度逐项检查，并按其『输出要求』一节的结构用中文输出评审结论。该文档的要求优先于评论里的临时指示。"
